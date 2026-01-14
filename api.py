@@ -3,7 +3,7 @@ import requests
 # -----------------------------
 # OpenWeather API Key
 # -----------------------------
-API_KEY = "def170ff2ceeefcf8dc003e413dd12b1"
+API_KEY = ""
 
 # -----------------------------
 # Get Latitude & Longitude
