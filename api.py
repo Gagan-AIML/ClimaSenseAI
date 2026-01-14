@@ -77,4 +77,4 @@ def get_weather_air_by_city(city):
     lat, lon = get_coordinates(city)
     weather = get_weather(city)
     air = get_air_quality(lat, lon)
-    return weather, air
+    return [weather, air]
