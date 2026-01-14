@@ -7,8 +7,8 @@ from email.mime.text import MIMEText
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 
-SENDER_EMAIL = "climasenseai@gmail.com"
-SENDER_PASSWORD = "comnhcbtfkwfjxyl"  # App password
+SENDER_EMAIL = "yourgmail@gmail.com"
+SENDER_PASSWORD = "your gmail password"  # App password
 
 # -------------------------------------------------
 # Core Email Sender
