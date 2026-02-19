@@ -7,27 +7,32 @@ The system integrates data processing, model training, backend APIs, and a respo
 🚀 Features
 
 📊 Air Quality Health Impact Prediction using ML
-🧠 Trained Machine Learning model (Pickle-based deployment)
+
+🧠 Trained Machine Learning model
+
 🌐 REST API for prediction requests
+
 📧 Automated Email Notification System
+
 👥 Subscriber Management System
+
 📁 Full-stack integration (Frontend + Backend)
+
 📦 Model training and retraining pipeline
 
-Project Architecture
+Project Architecture: 
 ClimaSenseAI/
-│
-├── api.py                # API routes for prediction
-├── app.py                # Main application server
-├── ml_model.py           # ML model logic
-├── train_model.py        # Model training pipeline
-├── disease_logic.py      # Health risk analysis logic
-├── email_service.py      # Email alert system
-├── health_model.pkl      # Trained ML model
-├── air_quality_health_impact_data.csv  # Dataset
-├── subscribers.csv       # User subscriber database
-├── requirements.txt      # Project dependencies
-└── frontend/             # UI components
+api.py                # API routes for prediction
+app.py                # Main application server
+ml_model.py           # ML model logic
+train_model.py        # Model training pipeline
+disease_logic.py      # Health risk analysis logic
+email_service.py      # Email alert system
+health_model.pkl      # Trained ML model
+air_quality_health_impact_data.csv  # Dataset
+subscribers.csv       # User subscriber database
+requirements.txt      # Project dependencies
+frontend/             # UI components
 
 🛠️ Tech Stack
 Languages: Python, HTML, CSS, JavaScript
