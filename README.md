@@ -36,7 +36,9 @@ frontend/             # UI components
 
 🛠️ Tech Stack
 Languages: Python, HTML, CSS, JavaScript
+
 Libraries & Frameworks: Pandas, NumPy, Scikit-learn, SMTP (for email service)
+
 Tools: Git & GitHub, VS Code
 
 📊 Model Details
@@ -52,10 +54,13 @@ Stores subscribers in subscribers.csv
 Sends automated alerts based on prediction results
 Helps users take preventive health measures
 
-⚙️ Installation & Setup
+⚙️ Installation & Setup:
 git clone https://github.com/Gagan-AIML/ClimaSenseAI.git
+
 cd ClimaSenseAI
+
 pip install -r requirements.txt
+
 python app.py
 
 📌 Future Improvements
