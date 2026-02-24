@@ -2,7 +2,6 @@ import pandas as pd
 from xgboost import XGBRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
-import joblib
 import numpy as np
 
 df = pd.read_csv("air_quality_health_impact_data.csv")
@@ -38,6 +37,6 @@ print("R²:", r2_score(y_test, y_pred))
 print("MAE:", mean_absolute_error(y_test, y_pred))
 print("RMSE:", np.sqrt(mean_squared_error(y_test, y_pred)))
 
-joblib.dump(model, "health_model.pkl")
+model.save_model("health_model.json")
 
 print("✅ ML model trained & saved as health_model.pkl")
