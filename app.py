@@ -2,32 +2,14 @@ import streamlit as st
 import pandas as pd
 import requests
 
-from api import get_coordinates, get_weather, get_air_quality, get_weather_air_by_city
+from streamlit_js_eval import get_geolocation
+from api import get_coordinates, get_weather, get_air_quality, API_KEY
 from disease_logic import map_specific_diseases
-from ml_model import predict_hospital_admissions as predict_hospital_cases
+from ml_model import predict_health_impact_score as predict_health_impact
 from email_service import send_alert_email, send_confirmation_email
 
 # -------------------------------------------------
-# Streamlit Session State Initialization
-# -------------------------------------------------
-if "risk_level" not in st.session_state:
-    st.session_state.risk_level = None
-
-if "diseases" not in st.session_state:
-    st.session_state.diseases = []
-
-# -------------------------------------------------
-# IP-Based Location Detection
-# -------------------------------------------------
-def get_city_from_ip():
-    try:
-        response = requests.get("https://ipinfo.io/json", timeout=5)
-        return response.json().get("city")
-    except:
-        return None
-
-# -------------------------------------------------
-# Page Configuration
+# Streamlit Config
 # -------------------------------------------------
 st.set_page_config(
     page_title="ClimaSense AI",
@@ -44,46 +26,68 @@ weather and air quality conditions.
 """)
 
 # -------------------------------------------------
-# Location Selection
+# Session State
 # -------------------------------------------------
-cities = [
-    "Delhi", "Mumbai", "Pune", "Bengaluru", "Chennai", "Hyderabad",
-    "Kochi", "Thiruvananthapuram", "Coimbatore", "Madurai",
-    "Ahmedabad", "Surat", "Nagpur", "Panaji",
-    "Guwahati", "Shillong", "Imphal", "Itanagar",
-    "Jammu", "Srinagar", "Dehradun", "Shimla"
-]
+if "risk_level" not in st.session_state:
+    st.session_state.risk_level = None
 
-detected_city = get_city_from_ip()
-use_current = st.checkbox("📍 Use current location", value=True)
+if "diseases" not in st.session_state:
+    st.session_state.diseases = []
 
-if use_current and detected_city in cities:
-    city = detected_city
-    st.info(f"Detected City: {city}")
+# -------------------------------------------------
+# Auto Location Detection (Browser Based)
+# -------------------------------------------------
+st.subheader("📍 Detecting Your Location")
+
+geo_data = get_geolocation()
+
+if geo_data:
+    lat = geo_data["coords"]["latitude"]
+    lon = geo_data["coords"]["longitude"]
+
+    try:
+        reverse_url = (
+            f"http://api.openweathermap.org/geo/1.0/reverse"
+            f"?lat={lat}&lon={lon}&limit=1&appid={API_KEY}"
+        )
+        reverse_response = requests.get(reverse_url).json()
+
+        if reverse_response:
+            city = reverse_response[0]["name"]
+            st.success(f"Detected City: {city}")
+        else:
+            st.warning("City detection failed. Please enter manually.")
+            city = st.text_input("Enter City Name")
+
+    except:
+        city = st.text_input("Enter City Name")
+
 else:
-    city = st.selectbox("🌍 Select City", cities)
+    st.info("Please allow location access in your browser.")
+    city = st.text_input("Enter City Name")
 
 # -------------------------------------------------
 # Health Risk Check
 # -------------------------------------------------
-if st.button("🔍 Check Health Risk"):
+if city and st.button("🔍 Check Health Risk"):
     try:
         lat, lon = get_coordinates(city)
         weather = get_weather(city)
         air = get_air_quality(lat, lon)
 
         diseases = map_specific_diseases(air, weather)
-        predicted_cases = predict_hospital_cases(air, weather)
 
-        # Risk fusion logic
-        if predicted_cases >= 15 or len(diseases) >= 4:
+        # Predict Health Impact Score
+        health_score = predict_health_impact(air, weather)
+
+        # Risk classification
+        if health_score >= 75 or len(diseases) >= 4:
             risk_level = "High"
-        elif predicted_cases >= 7 or len(diseases) >= 2:
+        elif health_score >= 50 or len(diseases) >= 2:
             risk_level = "Medium"
         else:
             risk_level = "Low"
 
-        # Save to session state
         st.session_state.risk_level = risk_level
         st.session_state.diseases = diseases
 
@@ -91,13 +95,13 @@ if st.button("🔍 Check Health Risk"):
         st.subheader("🌦 Environmental Conditions")
         st.write(f"🌡 Temperature: {weather['temperature']} °C")
         st.write(f"💧 Humidity: {weather['humidity']} %")
-        st.write(f"🌧 Rainfall: {weather['rainfall']} mm")
+        st.write(f"🌧 Rainfall: {weather.get('rainfall', 0)} mm")
         st.write(f"🌫 AQI: {air['aqi']}")
         st.write(f"🌫 PM2.5: {air['pm25']}")
         st.write(f"🌫 PM10: {air['pm10']}")
 
-        st.subheader("🏥 ML-Based Respiratory Risk Indicator")
-        st.write(f"Predicted Respiratory Cases: **{predicted_cases}**")
+        st.subheader("🏥 ML-Based Health Impact Score")
+        st.write(f"Predicted Health Impact Score: **{health_score}**")
 
         st.subheader("⚠ Health Risk Assessment")
         if risk_level == "High":
@@ -141,10 +145,8 @@ if st.button("🔔 Subscribe for Alerts"):
             df.loc[len(df)] = [email, city]
             df.to_csv("subscribers.csv", index=False)
 
-            # ✅ ALWAYS send confirmation email
             send_confirmation_email(email, city)
 
-            # ⚠️ Send alert email ONLY if risk is Medium or High
             if st.session_state.risk_level in ["Medium", "High"]:
                 send_alert_email(
                     email,

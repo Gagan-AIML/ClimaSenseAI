@@ -2,7 +2,7 @@ streamlit
 requests
 pandas
 scikit-learn
-xgboost
+xgboost==1.7.6
 joblib
 gspread
 oauth2client
