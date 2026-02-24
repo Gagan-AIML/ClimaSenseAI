@@ -1,8 +1,10 @@
-import joblib
 import numpy as np
 
 # Load trained model
-model = joblib.load("health_model.pkl")
+from xgboost import XGBRegressor
+
+model = XGBRegressor()
+model.load_model("health_model.json")
 
 def predict_health_impact_score(air, weather):
     """
