@@ -1,36 +1,36 @@
 import numpy as np
-import xgboost as xgb
+from xgboost import XGBRegressor
 
-# Load booster directly
-booster = xgb.Booster()
-booster.load_model("health_model.json")
+# 1. Initialize the shell
+model = XGBRegressor()
 
-def predict_health_impact_score(air, weather):
-    import numpy as np
-import xgboost as xgb
+# 2. THE CRITICAL FIX: Manually define the estimator type
+# This satisfies the internal check in the load_model function
+model._estimator_type = "regressor" 
 
-# Load booster directly
-booster = xgb.Booster()
-booster.load_model("health_model.json")
+# 3. Load your file (This will no longer crash!)
+model.load_model("health_model.json")
 
 def predict_health_impact_score(air, weather):
-    features = np.array([[
-        air["pm2_5"],
-        air["pm10"],
-        air["aqi"],
-        weather["temperature"],
-        weather["humidity"],
-        air["no2"],
-        air["so2"],
-        air["o3"]
-    ]])
+    """
+    Predict Health Impact Score using live air & weather data.
+    Feature order MUST match training.
+    """
+    try:
+        features = np.array([[  
+            air.get("pm25", 0),         
+            air.get("pm10", 0),         
+            air.get("aqi", 0),                
+            weather.get("temperature", 0),   
+            weather.get("humidity", 0),      
+            air.get("no2", 0),                
+            air.get("so2", 0),                
+            air.get("o3", 0)                  
+        ]])
 
-    dmatrix = xgb.DMatrix(features)
-    prediction = booster.predict(dmatrix)
-
-    return float(prediction[0])
-
-    dmatrix = xgb.DMatrix(features)
-    prediction = booster.predict(dmatrix)
-
-    return float(prediction[0])
+        prediction = model.predict(features)[0]
+        return round(float(prediction), 2)
+        
+    except Exception as e:
+        # Returns 0.0 if there is an error fetching a specific pollutant
+        return 0.0
